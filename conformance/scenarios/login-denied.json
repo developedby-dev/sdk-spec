@@ -1,0 +1,78 @@
+{
+  "name": "login-denied",
+  "title": "사용자가 거부하면(INVALID_GRANT) 그 에러로 끝낸다 — correlationId를 싣는다",
+  "specSections": ["3.2", "5"],
+  "random": [0],
+  "steps": [
+    {
+      "call": "login.start",
+      "id": "start"
+    },
+    {
+      "request": {
+        "operation": "issueDeviceCode",
+        "body": {
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      },
+      "atSec": 0,
+      "respond": {
+        "status": 200,
+        "body": {
+          "$deviceCodeResponse": {
+            "interval": 5
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "start",
+        "ok": true,
+        "value": {
+          "userCode": "BCDF-GHJK",
+          "expiresAt": {
+            "$at": "+900s"
+          }
+        }
+      }
+    },
+    {
+      "call": "login.wait",
+      "id": "wait"
+    },
+    {
+      "advanceSec": 5
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+          "device_code": "dc_Q8ZD5R2KT7VCPW01J9M0Y6X4N3"
+        }
+      },
+      "atSec": 5,
+      "respond": {
+        "error": "INVALID_GRANT"
+      }
+    },
+    {
+      "result": {
+        "id": "wait",
+        "ok": false,
+        "error": {
+          "code": "INVALID_GRANT",
+          "httpStatus": 400,
+          "correlationId": {
+            "$regex": "^req_conf"
+          }
+        }
+      }
+    },
+    {
+      "advanceSec": 30
+    }
+  ]
+}

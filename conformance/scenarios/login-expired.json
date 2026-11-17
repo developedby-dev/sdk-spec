@@ -1,0 +1,87 @@
+{
+  "name": "login-expired",
+  "title": "다음 폴링이 만료 뒤면 보내지 않고 EXPIRED_TOKEN으로 끝낸다",
+  "specSections": ["5"],
+  "random": [0, 0, 0],
+  "steps": [
+    {
+      "call": "login.start",
+      "id": "start"
+    },
+    {
+      "request": {
+        "operation": "issueDeviceCode"
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "$deviceCodeResponse": {
+            "interval": 5,
+            "expiresIn": 12
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "start",
+        "ok": true,
+        "value": {
+          "expiresAt": {
+            "$at": "+12s"
+          }
+        }
+      }
+    },
+    {
+      "call": "login.wait",
+      "id": "wait"
+    },
+    {
+      "advanceSec": 5
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+          "device_code": "dc_Q8ZD5R2KT7VCPW01J9M0Y6X4N3"
+        }
+      },
+      "atSec": 5,
+      "respond": {
+        "error": "AUTHORIZATION_PENDING"
+      }
+    },
+    {
+      "advanceSec": 5
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+          "device_code": "dc_Q8ZD5R2KT7VCPW01J9M0Y6X4N3"
+        }
+      },
+      "atSec": 10,
+      "respond": {
+        "error": "AUTHORIZATION_PENDING"
+      }
+    },
+    {
+      "result": {
+        "id": "wait",
+        "ok": false,
+        "error": {
+          "code": "EXPIRED_TOKEN",
+          "httpStatus": null
+        }
+      }
+    },
+    {
+      "advanceSec": 30,
+      "note": "더 보내지 않는다"
+    }
+  ]
+}

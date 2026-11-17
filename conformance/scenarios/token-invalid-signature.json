@@ -1,0 +1,111 @@
+{
+  "name": "token-invalid-signature",
+  "title": "JWKS 키로 서명이 맞지 않는 licenseToken이면 TOKEN_INVALID로 Locked",
+  "specSections": ["9"],
+  "storage": {
+    "version": 1,
+    "refreshToken": "rt_conf_stored_000000001",
+    "scope": "entitlement.read session.write device.manage version.read profile.read",
+    "savedAt": "2026-10-06T13:00:00Z"
+  },
+  "steps": [
+    {
+      "call": "session.start",
+      "id": "start"
+    },
+    {
+      "event": {
+        "kind": "session.state",
+        "state": {
+          "type": "Starting",
+          "attempt": 0,
+          "lastError": null
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "start",
+        "ok": true
+      }
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "refresh_token",
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "refresh_token": "rt_conf_stored_000000001"
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "$tokenResponse": {
+            "access": {
+              "name": "at1"
+            },
+            "refreshToken": "rt_conf_rotated_00000001"
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "kind": "storage",
+        "op": "save",
+        "record": {
+          "version": 1,
+          "refreshToken": "rt_conf_rotated_00000001",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      }
+    },
+    {
+      "request": {
+        "operation": "acquireSession",
+        "headers": {
+          "authorization": {
+            "$bearer": "at1"
+          },
+          "idempotency-key": "00000000-0000-4000-8000-000000000002"
+        },
+        "body": {
+          "device": {
+            "fingerprintHash": {
+              "$fingerprint": true
+            },
+            "name": "DESKTOP-7XK2P",
+            "platform": "WINDOWS"
+          },
+          "instanceId": "00000000-0000-4000-8000-000000000001",
+          "force": false
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "$sessionResponse": {
+            "id": "sess_01J9M2P8Q7R6S5T4V3W2X1Y0Z9",
+            "generation": 1,
+            "token": {
+              "name": "forged",
+              "kid": "conf-k1",
+              "signWith": "conf-rogue"
+            }
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "kind": "session.state",
+        "state": {
+          "type": "Locked",
+          "code": "TOKEN_INVALID",
+          "retrying": false
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "name": "login-cancel",
+  "title": "cancel()이면 LOGIN_CANCELLED로 끝내고 더 폴링하지 않는다",
+  "specSections": ["5"],
+  "random": [0],
+  "steps": [
+    {
+      "call": "login.start",
+      "id": "start"
+    },
+    {
+      "request": {
+        "operation": "issueDeviceCode",
+        "body": {
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      },
+      "atSec": 0,
+      "respond": {
+        "status": 200,
+        "body": {
+          "$deviceCodeResponse": {
+            "interval": 5
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "start",
+        "ok": true,
+        "value": {
+          "userCode": "BCDF-GHJK",
+          "expiresAt": {
+            "$at": "+900s"
+          }
+        }
+      }
+    },
+    {
+      "call": "login.wait",
+      "id": "wait"
+    },
+    {
+      "advanceSec": 2
+    },
+    {
+      "call": "login.cancel",
+      "id": "cancel"
+    },
+    {
+      "anyOrder": [
+        {
+          "result": {
+            "id": "wait",
+            "ok": false,
+            "error": {
+              "code": "LOGIN_CANCELLED"
+            }
+          }
+        },
+        {
+          "result": {
+            "id": "cancel",
+            "ok": true
+          }
+        }
+      ]
+    },
+    {
+      "advanceSec": 30,
+      "note": "예약했던 폴링은 취소됐다"
+    }
+  ]
+}

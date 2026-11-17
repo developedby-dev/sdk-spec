@@ -1,0 +1,40 @@
+{
+  "name": "logout-offline",
+  "title": "폐기 요청이 실패해도 이 기기의 로그인은 지운다 — serverRevoked: false",
+  "specSections": ["7"],
+  "storage": {
+    "version": 1,
+    "refreshToken": "rt_conf_stored_000000001",
+    "scope": "entitlement.read session.write device.manage version.read profile.read",
+    "savedAt": "2026-10-06T13:00:00Z"
+  },
+  "steps": [
+    {
+      "call": "logout",
+      "id": "out"
+    },
+    {
+      "request": {
+        "operation": "revokeToken"
+      },
+      "respond": {
+        "network": true
+      }
+    },
+    {
+      "event": {
+        "kind": "storage",
+        "op": "clear"
+      }
+    },
+    {
+      "result": {
+        "id": "out",
+        "ok": true,
+        "value": {
+          "serverRevoked": false
+        }
+      }
+    }
+  ]
+}

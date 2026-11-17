@@ -1,0 +1,103 @@
+{
+  "name": "refresh-gives-up",
+  "title": "재시도를 다 쓰면 마지막 에러를 돌려주고 기록은 그대로",
+  "specSections": ["6"],
+  "storage": {
+    "version": 1,
+    "refreshToken": "rt_conf_stored_000000001",
+    "scope": "entitlement.read session.write device.manage version.read profile.read",
+    "savedAt": "2026-10-06T13:00:00Z"
+  },
+  "steps": [
+    {
+      "call": "entitlement",
+      "id": "ent"
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "refresh_token",
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "refresh_token": "rt_conf_stored_000000001"
+        }
+      },
+      "respond": {
+        "network": true
+      },
+      "atSec": 0
+    },
+    {
+      "advanceSec": 1
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "refresh_token",
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "refresh_token": "rt_conf_stored_000000001"
+        }
+      },
+      "respond": {
+        "network": true
+      },
+      "atSec": 1
+    },
+    {
+      "advanceSec": 3
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "refresh_token",
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "refresh_token": "rt_conf_stored_000000001"
+        }
+      },
+      "respond": {
+        "network": true
+      },
+      "atSec": 4
+    },
+    {
+      "advanceSec": 7
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "refresh_token",
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "refresh_token": "rt_conf_stored_000000001"
+        }
+      },
+      "respond": {
+        "error": "INTERNAL_ERROR"
+      },
+      "atSec": 11
+    },
+    {
+      "result": {
+        "id": "ent",
+        "ok": false,
+        "error": {
+          "code": "INTERNAL_ERROR",
+          "httpStatus": 500
+        }
+      }
+    },
+    {
+      "call": "hasCredentials",
+      "id": "has"
+    },
+    {
+      "result": {
+        "id": "has",
+        "ok": true,
+        "value": true
+      }
+    }
+  ]
+}

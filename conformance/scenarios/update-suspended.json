@@ -1,0 +1,97 @@
+{
+  "name": "update-suspended",
+  "title": "받을 수 있는 버전이 없으면 PRODUCT_SUSPENDED를 그대로 돌려준다 — 스스로 다시 하지 않는다",
+  "specSections": ["3.4", "7"],
+  "storage": {
+    "version": 1,
+    "refreshToken": "rt_conf_stored_000000001",
+    "scope": "entitlement.read session.write device.manage version.read profile.read",
+    "savedAt": "2026-10-06T13:00:00Z"
+  },
+  "steps": [
+    {
+      "call": "checkForUpdate",
+      "id": "check",
+      "args": {
+        "target": "LINUX_X64",
+        "currentVersion": "1.0.0"
+      }
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "refresh_token",
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "refresh_token": "rt_conf_stored_000000001"
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "$tokenResponse": {
+            "access": {
+              "name": "at1"
+            },
+            "refreshToken": "rt_conf_rotated_00000001"
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "kind": "storage",
+        "op": "save",
+        "record": {
+          "version": 1,
+          "refreshToken": "rt_conf_rotated_00000001",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      }
+    },
+    {
+      "request": {
+        "operation": "getProductUpdates",
+        "query": {
+          "target": "LINUX_X64"
+        }
+      },
+      "respond": {
+        "error": "PRODUCT_SUSPENDED"
+      }
+    },
+    {
+      "result": {
+        "id": "check",
+        "ok": false,
+        "error": {
+          "code": "PRODUCT_SUSPENDED",
+          "httpStatus": 403
+        }
+      }
+    },
+    {
+      "call": "profile",
+      "id": "rl"
+    },
+    {
+      "request": {
+        "operation": "getProfile"
+      },
+      "respond": {
+        "error": "RATE_LIMITED",
+        "retryAfterSec": 30
+      }
+    },
+    {
+      "result": {
+        "id": "rl",
+        "ok": false,
+        "error": {
+          "code": "RATE_LIMITED",
+          "retryAfterSec": 30
+        }
+      }
+    }
+  ]
+}

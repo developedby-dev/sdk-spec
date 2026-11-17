@@ -1,0 +1,234 @@
+{
+  "name": "proactive-refresh",
+  "title": "access_token 만료 60초 전부터는 요청 전에 갱신한다",
+  "specSections": ["3.5"],
+  "storage": {
+    "version": 1,
+    "refreshToken": "rt_conf_stored_000000001",
+    "scope": "entitlement.read session.write device.manage version.read profile.read",
+    "savedAt": "2026-10-06T13:00:00Z"
+  },
+  "steps": [
+    {
+      "call": "entitlement",
+      "id": "a"
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "refresh_token",
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "refresh_token": "rt_conf_stored_000000001"
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "$tokenResponse": {
+            "access": {
+              "name": "at1"
+            },
+            "refreshToken": "rt_conf_rotated_00000001"
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "kind": "storage",
+        "op": "save",
+        "record": {
+          "version": 1,
+          "refreshToken": "rt_conf_rotated_00000001",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      }
+    },
+    {
+      "request": {
+        "operation": "getMyEntitlement",
+        "headers": {
+          "authorization": {
+            "$bearer": "at1"
+          }
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "entitlement": {
+            "id": "ent_01J9M7Q2R4S6T8V0W2X4Y6Z8A0",
+            "productId": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD",
+            "status": "ACTIVE",
+            "term": {
+              "type": "PERPETUAL",
+              "expiresAt": null,
+              "remainingDays": null,
+              "remainingSeconds": null
+            },
+            "updateCoverage": {
+              "type": "ALL"
+            },
+            "subscription": null,
+            "policy": {
+              "maxDevices": 3,
+              "maxConcurrent": 1,
+              "heartbeatSec": 150,
+              "offlineGraceHours": 0
+            },
+            "evaluatedAt": {
+              "$at": "+0s"
+            }
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "a",
+        "ok": true
+      }
+    },
+    {
+      "advanceSec": 3539
+    },
+    {
+      "call": "entitlement",
+      "id": "b",
+      "note": "만료 61초 전 — 그대로 쓴다"
+    },
+    {
+      "request": {
+        "operation": "getMyEntitlement",
+        "headers": {
+          "authorization": {
+            "$bearer": "at1"
+          }
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "entitlement": {
+            "id": "ent_01J9M7Q2R4S6T8V0W2X4Y6Z8A0",
+            "productId": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD",
+            "status": "ACTIVE",
+            "term": {
+              "type": "PERPETUAL",
+              "expiresAt": null,
+              "remainingDays": null,
+              "remainingSeconds": null
+            },
+            "updateCoverage": {
+              "type": "ALL"
+            },
+            "subscription": null,
+            "policy": {
+              "maxDevices": 3,
+              "maxConcurrent": 1,
+              "heartbeatSec": 150,
+              "offlineGraceHours": 0
+            },
+            "evaluatedAt": {
+              "$at": "+0s"
+            }
+          }
+        }
+      },
+      "atSec": 3539
+    },
+    {
+      "result": {
+        "id": "b",
+        "ok": true
+      }
+    },
+    {
+      "advanceSec": 1
+    },
+    {
+      "call": "entitlement",
+      "id": "c",
+      "note": "만료 60초 전 — 먼저 갱신"
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "refresh_token",
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "refresh_token": "rt_conf_rotated_00000001"
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "$tokenResponse": {
+            "access": {
+              "name": "at2"
+            },
+            "refreshToken": "rt_conf_rotated_00000002"
+          }
+        }
+      },
+      "atSec": 3540
+    },
+    {
+      "event": {
+        "kind": "storage",
+        "op": "save",
+        "record": {
+          "version": 1,
+          "refreshToken": "rt_conf_rotated_00000002",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      }
+    },
+    {
+      "request": {
+        "operation": "getMyEntitlement",
+        "headers": {
+          "authorization": {
+            "$bearer": "at2"
+          }
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "entitlement": {
+            "id": "ent_01J9M7Q2R4S6T8V0W2X4Y6Z8A0",
+            "productId": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD",
+            "status": "ACTIVE",
+            "term": {
+              "type": "PERPETUAL",
+              "expiresAt": null,
+              "remainingDays": null,
+              "remainingSeconds": null
+            },
+            "updateCoverage": {
+              "type": "ALL"
+            },
+            "subscription": null,
+            "policy": {
+              "maxDevices": 3,
+              "maxConcurrent": 1,
+              "heartbeatSec": 150,
+              "offlineGraceHours": 0
+            },
+            "evaluatedAt": {
+              "$at": "+0s"
+            }
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "c",
+        "ok": true
+      }
+    }
+  ]
+}

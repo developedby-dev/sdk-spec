@@ -1,0 +1,170 @@
+{
+  "name": "takeover-limit",
+  "title": "강제 인수 한도를 넘으면 Locked(TAKEOVER_LIMIT_EXCEEDED, details.resetsAt)",
+  "specSections": ["8.2"],
+  "storage": {
+    "version": 1,
+    "refreshToken": "rt_conf_stored_000000001",
+    "scope": "entitlement.read session.write device.manage version.read profile.read",
+    "savedAt": "2026-10-06T13:00:00Z"
+  },
+  "steps": [
+    {
+      "call": "session.start",
+      "id": "start"
+    },
+    {
+      "event": {
+        "kind": "session.state",
+        "state": {
+          "type": "Starting",
+          "attempt": 0,
+          "lastError": null
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "start",
+        "ok": true
+      }
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "refresh_token",
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "refresh_token": "rt_conf_stored_000000001"
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "$tokenResponse": {
+            "access": {
+              "name": "at1"
+            },
+            "refreshToken": "rt_conf_rotated_00000001"
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "kind": "storage",
+        "op": "save",
+        "record": {
+          "version": 1,
+          "refreshToken": "rt_conf_rotated_00000001",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      }
+    },
+    {
+      "request": {
+        "operation": "acquireSession",
+        "headers": {
+          "authorization": {
+            "$bearer": "at1"
+          },
+          "idempotency-key": "00000000-0000-4000-8000-000000000002"
+        },
+        "body": {
+          "device": {
+            "fingerprintHash": {
+              "$fingerprint": true
+            },
+            "name": "DESKTOP-7XK2P",
+            "platform": "WINDOWS"
+          },
+          "instanceId": "00000000-0000-4000-8000-000000000001",
+          "force": false
+        }
+      },
+      "respond": {
+        "error": "INSTANCE_ALREADY_RUNNING",
+        "details": {
+          "activeSession": {
+            "deviceId": "dev_01J9M0Z8Y7X6W5V4T3S2R1Q0P9",
+            "deviceName": "DESKTOP-7XK2P",
+            "lastSeenAt": "2026-10-06T13:59:00Z"
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "kind": "session.state",
+        "state": {
+          "type": "NeedsDecision",
+          "reason": "INSTANCE_ALREADY_RUNNING"
+        }
+      }
+    },
+    {
+      "call": "session.takeOver",
+      "id": "take"
+    },
+    {
+      "event": {
+        "kind": "session.state",
+        "state": {
+          "type": "Starting",
+          "attempt": 0,
+          "lastError": null
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "take",
+        "ok": true
+      }
+    },
+    {
+      "request": {
+        "operation": "acquireSession",
+        "headers": {
+          "authorization": {
+            "$bearer": "at1"
+          },
+          "idempotency-key": "00000000-0000-4000-8000-000000000003"
+        },
+        "body": {
+          "device": {
+            "fingerprintHash": {
+              "$fingerprint": true
+            },
+            "name": "DESKTOP-7XK2P",
+            "platform": "WINDOWS"
+          },
+          "instanceId": "00000000-0000-4000-8000-000000000001",
+          "force": true
+        }
+      },
+      "respond": {
+        "error": "TAKEOVER_LIMIT_EXCEEDED",
+        "retryAfterSec": 3600,
+        "details": {
+          "limit": 5,
+          "resetsAt": "2026-10-06T15:00:00Z"
+        }
+      }
+    },
+    {
+      "event": {
+        "kind": "session.state",
+        "state": {
+          "type": "Locked",
+          "code": "TAKEOVER_LIMIT_EXCEEDED",
+          "retrying": false,
+          "details": {
+            "limit": 5,
+            "resetsAt": "2026-10-06T15:00:00Z"
+          }
+        }
+      }
+    }
+  ]
+}

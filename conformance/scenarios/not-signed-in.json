@@ -1,0 +1,31 @@
+{
+  "name": "not-signed-in",
+  "title": "저장된 로그인이 없으면 요청 없이 NOT_SIGNED_IN",
+  "specSections": ["3.5"],
+  "steps": [
+    {
+      "call": "entitlement",
+      "id": "ent"
+    },
+    {
+      "result": {
+        "id": "ent",
+        "ok": false,
+        "error": {
+          "code": "NOT_SIGNED_IN"
+        }
+      }
+    },
+    {
+      "call": "hasCredentials",
+      "id": "has"
+    },
+    {
+      "result": {
+        "id": "has",
+        "ok": true,
+        "value": false
+      }
+    }
+  ]
+}

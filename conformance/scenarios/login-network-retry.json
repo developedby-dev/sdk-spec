@@ -1,0 +1,118 @@
+{
+  "name": "login-network-retry",
+  "title": "폴링 중 일시적 실패는 같은 간격으로 다시 — 만료 전까지",
+  "specSections": ["3.4", "5"],
+  "random": [0, 0, 0],
+  "steps": [
+    {
+      "call": "login.start",
+      "id": "start"
+    },
+    {
+      "request": {
+        "operation": "issueDeviceCode",
+        "body": {
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      },
+      "atSec": 0,
+      "respond": {
+        "status": 200,
+        "body": {
+          "$deviceCodeResponse": {
+            "interval": 5
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "start",
+        "ok": true,
+        "value": {
+          "userCode": "BCDF-GHJK",
+          "expiresAt": {
+            "$at": "+900s"
+          }
+        }
+      }
+    },
+    {
+      "call": "login.wait",
+      "id": "wait"
+    },
+    {
+      "advanceSec": 5
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+          "device_code": "dc_Q8ZD5R2KT7VCPW01J9M0Y6X4N3"
+        }
+      },
+      "atSec": 5,
+      "respond": {
+        "network": true
+      }
+    },
+    {
+      "advanceSec": 5
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+          "device_code": "dc_Q8ZD5R2KT7VCPW01J9M0Y6X4N3"
+        }
+      },
+      "atSec": 10,
+      "respond": {
+        "status": 503,
+        "rawBody": "<html>unavailable</html>"
+      }
+    },
+    {
+      "advanceSec": 5
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+          "device_code": "dc_Q8ZD5R2KT7VCPW01J9M0Y6X4N3"
+        }
+      },
+      "atSec": 15,
+      "respond": {
+        "status": 200,
+        "body": {
+          "$tokenResponse": {
+            "refreshToken": "rt_conf_login_0000000003"
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "kind": "storage",
+        "op": "save",
+        "record": {
+          "refreshToken": "rt_conf_login_0000000003"
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "wait",
+        "ok": true,
+        "value": {
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      }
+    }
+  ]
+}

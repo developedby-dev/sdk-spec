@@ -1,0 +1,92 @@
+{
+  "name": "session-user-agent",
+  "title": "모든 요청에 User-Agent bydev-<언어>/<판>",
+  "specSections": ["3.1"],
+  "storage": {
+    "version": 1,
+    "refreshToken": "rt_conf_stored_000000001",
+    "scope": "entitlement.read session.write device.manage version.read profile.read",
+    "savedAt": "2026-10-06T13:00:00Z"
+  },
+  "steps": [
+    {
+      "call": "entitlement",
+      "id": "ent"
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "headers": {
+          "user-agent": {
+            "$regex": "^bydev-(typescript|dotnet|swift|kotlin|python|go|rust|c)/[0-9]+\\.[0-9]+\\.[0-9]+"
+          }
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "$tokenResponse": {
+            "access": {
+              "name": "at1"
+            },
+            "refreshToken": "rt_conf_rotated_00000001"
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "kind": "storage",
+        "op": "save",
+        "record": {
+          "refreshToken": "rt_conf_rotated_00000001"
+        }
+      }
+    },
+    {
+      "request": {
+        "operation": "getMyEntitlement",
+        "headers": {
+          "user-agent": {
+            "$regex": "^bydev-[a-z]+/"
+          }
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "entitlement": {
+            "id": "ent_01J9M7Q2R4S6T8V0W2X4Y6Z8A0",
+            "productId": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD",
+            "status": "ACTIVE",
+            "term": {
+              "type": "PERPETUAL",
+              "expiresAt": null,
+              "remainingDays": null,
+              "remainingSeconds": null
+            },
+            "updateCoverage": {
+              "type": "ALL"
+            },
+            "subscription": null,
+            "policy": {
+              "maxDevices": 3,
+              "maxConcurrent": 1,
+              "heartbeatSec": 150,
+              "offlineGraceHours": 0
+            },
+            "evaluatedAt": {
+              "$at": "+0s"
+            }
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "ent",
+        "ok": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,259 @@
+{
+  "name": "update-entitled",
+  "title": "업데이트 제공 기한 — 이용권의 updateCoverage와 업데이트 확인의 entitled(범위 안 최신 · 없으면 null)를 그대로 돌려준다",
+  "specSections": ["7"],
+  "storage": {
+    "version": 1,
+    "refreshToken": "rt_conf_stored_000000001",
+    "scope": "entitlement.read session.write device.manage version.read profile.read",
+    "savedAt": "2026-10-06T13:00:00Z"
+  },
+  "steps": [
+    {
+      "call": "entitlement",
+      "id": "ent"
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "refresh_token",
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "refresh_token": "rt_conf_stored_000000001"
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "$tokenResponse": {
+            "access": {
+              "name": "at1"
+            },
+            "refreshToken": "rt_conf_rotated_00000001"
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "kind": "storage",
+        "op": "save",
+        "record": {
+          "version": 1,
+          "refreshToken": "rt_conf_rotated_00000001",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      }
+    },
+    {
+      "request": {
+        "operation": "getMyEntitlement"
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "entitlement": {
+            "id": "ent_01J9M7Q2R4S6T8V0W2X4Y6Z8A0",
+            "productId": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD",
+            "status": "ACTIVE",
+            "term": {
+              "type": "PERPETUAL",
+              "expiresAt": null,
+              "remainingDays": null,
+              "remainingSeconds": null
+            },
+            "updateCoverage": {
+              "type": "UNTIL",
+              "until": "2027-11-12T03:00:00Z"
+            },
+            "subscription": null,
+            "policy": {
+              "maxDevices": 3,
+              "maxConcurrent": 1,
+              "heartbeatSec": 150,
+              "offlineGraceHours": 0
+            },
+            "evaluatedAt": "2026-10-06T14:00:00Z"
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "ent",
+        "ok": true,
+        "value": {
+          "term": {
+            "type": "PERPETUAL"
+          },
+          "updateCoverage": {
+            "$exact": {
+              "type": "UNTIL",
+              "until": "2027-11-12T03:00:00Z"
+            }
+          }
+        }
+      }
+    },
+    {
+      "call": "checkForUpdate",
+      "id": "check",
+      "args": {
+        "target": "WINDOWS_X64",
+        "currentVersion": "1.4.2"
+      }
+    },
+    {
+      "request": {
+        "operation": "getProductUpdates",
+        "params": {
+          "id": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD"
+        },
+        "query": {
+          "target": "WINDOWS_X64",
+          "currentVersion": "1.4.2"
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "product": {
+            "id": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD"
+          },
+          "target": "WINDOWS_X64",
+          "latest": {
+            "version": "2.0.0",
+            "releasedAt": "2027-12-01T06:00:00Z",
+            "notes": "새 판"
+          },
+          "update": {
+            "status": "AVAILABLE"
+          },
+          "install": {
+            "mode": "HOSTED",
+            "buildId": "build_01J9M4D6F8H0J2K4M6N8P0R2S6",
+            "downloadUrl": "https://dl.example.test/builds/build_01J9M4D6F8H0J2K4M6N8P0R2S6/PhotoResizer-2.0.0-setup.exe?sig=8c2e4a",
+            "downloadUrlExpiresAt": "2026-10-06T15:00:00Z",
+            "sha256": "9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b",
+            "sizeBytes": 52428800
+          },
+          "entitled": {
+            "coveredUntil": "2027-11-12T03:00:00Z",
+            "release": {
+              "latest": {
+                "version": "1.4.2",
+                "releasedAt": "2027-10-02T06:00:00Z",
+                "notes": "보안 수정 포함"
+              },
+              "update": {
+                "status": "UP_TO_DATE"
+              },
+              "install": {
+                "mode": "HOSTED",
+                "buildId": "build_01J9M4D6F8H0J2K4M6N8P0R2S4",
+                "downloadUrl": "https://dl.example.test/builds/build_01J9M4D6F8H0J2K4M6N8P0R2S4/PhotoResizer-1.4.2-setup.exe?sig=3f9a1c",
+                "downloadUrlExpiresAt": "2026-10-06T15:00:00Z",
+                "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+                "sizeBytes": 5
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "check",
+        "ok": true,
+        "value": {
+          "latest": {
+            "version": "2.0.0"
+          },
+          "update": {
+            "status": "AVAILABLE"
+          },
+          "entitled": {
+            "coveredUntil": "2027-11-12T03:00:00Z",
+            "release": {
+              "latest": {
+                "version": "1.4.2"
+              },
+              "update": {
+                "status": "UP_TO_DATE"
+              },
+              "install": {
+                "mode": "HOSTED",
+                "buildId": "build_01J9M4D6F8H0J2K4M6N8P0R2S4",
+                "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "call": "checkForUpdate",
+      "id": "none",
+      "args": {
+        "target": "LINUX_X64",
+        "currentVersion": "2.0.0"
+      },
+      "note": "이 대상에 범위 안 버전이 없으면 release는 null"
+    },
+    {
+      "request": {
+        "operation": "getProductUpdates",
+        "params": {
+          "id": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD"
+        },
+        "query": {
+          "target": "LINUX_X64",
+          "currentVersion": "2.0.0"
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "product": {
+            "id": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD"
+          },
+          "target": "LINUX_X64",
+          "latest": {
+            "version": "2.0.0",
+            "releasedAt": "2027-12-01T06:00:00Z",
+            "notes": "새 판"
+          },
+          "update": {
+            "status": "UP_TO_DATE"
+          },
+          "install": {
+            "mode": "HOSTED",
+            "buildId": "build_01J9M4D6F8H0J2K4M6N8P0R2S6",
+            "downloadUrl": "https://dl.example.test/builds/build_01J9M4D6F8H0J2K4M6N8P0R2S6/PhotoResizer-2.0.0-setup.exe?sig=8c2e4a",
+            "downloadUrlExpiresAt": "2026-10-06T15:00:00Z",
+            "sha256": "9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b",
+            "sizeBytes": 52428800
+          },
+          "entitled": {
+            "coveredUntil": "2027-11-12T03:00:00Z",
+            "release": null
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "none",
+        "ok": true,
+        "value": {
+          "entitled": {
+            "$exact": {
+              "coveredUntil": "2027-11-12T03:00:00Z",
+              "release": null
+            }
+          }
+        }
+      }
+    }
+  ]
+}

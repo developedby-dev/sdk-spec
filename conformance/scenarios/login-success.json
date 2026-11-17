@@ -1,0 +1,75 @@
+{
+  "name": "login-success",
+  "title": "디바이스 로그인 — 코드를 받고 interval마다 폴링, 승인되면 저장한 뒤 성공",
+  "specSections": ["4", "5", "6"],
+  "random": [0, 0],
+  "steps": [
+    { "call": "login.start", "id": "start" },
+    {
+      "request": {
+        "operation": "issueDeviceCode",
+        "body": {
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      },
+      "atSec": 0,
+      "respond": { "status": 200, "body": { "$deviceCodeResponse": { "interval": 5 } } }
+    },
+    {
+      "result": {
+        "id": "start",
+        "ok": true,
+        "value": {
+          "userCode": "BCDF-GHJK",
+          "verificationUri": "https://store.example.test/device",
+          "verificationUriComplete": "https://store.example.test/device?user_code=BCDF-GHJK",
+          "expiresAt": { "$at": "+900s" }
+        }
+      }
+    },
+    { "call": "login.wait", "id": "wait" },
+    { "advanceSec": 5, "note": "폴링 지터 1.00 — 정확히 interval 뒤" },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "device_code": "dc_Q8ZD5R2KT7VCPW01J9M0Y6X4N3"
+        }
+      },
+      "atSec": 5,
+      "respond": { "error": "AUTHORIZATION_PENDING" }
+    },
+    { "advanceSec": 5 },
+    {
+      "request": { "operation": "exchangeToken" },
+      "atSec": 10,
+      "respond": {
+        "status": 200,
+        "body": { "$tokenResponse": { "refreshToken": "rt_conf_login_0000000001" } }
+      }
+    },
+    {
+      "event": {
+        "kind": "storage",
+        "op": "save",
+        "record": {
+          "version": 1,
+          "refreshToken": "rt_conf_login_0000000001",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "wait",
+        "ok": true,
+        "value": {
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      }
+    }
+  ]
+}

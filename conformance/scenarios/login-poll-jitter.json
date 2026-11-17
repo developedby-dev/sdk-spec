@@ -1,0 +1,82 @@
+{
+  "name": "login-poll-jitter",
+  "title": "폴링 지터는 위로만 — interval × 1.00 ~ 1.15",
+  "specSections": ["5"],
+  "random": [0.5, 0.9999, 0],
+  "steps": [
+    {
+      "call": "login.start",
+      "id": "start"
+    },
+    {
+      "request": {
+        "operation": "issueDeviceCode",
+        "body": {
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      },
+      "atSec": 0,
+      "respond": {
+        "status": 200,
+        "body": {
+          "$deviceCodeResponse": {
+            "interval": 5
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "start",
+        "ok": true,
+        "value": {
+          "userCode": "BCDF-GHJK",
+          "expiresAt": {
+            "$at": "+900s"
+          }
+        }
+      }
+    },
+    {
+      "advanceSec": 5.374
+    },
+    {
+      "advanceSec": 0.001,
+      "note": "r=0.5 → 5 × 1.075 = 5.375초"
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+          "device_code": "dc_Q8ZD5R2KT7VCPW01J9M0Y6X4N3"
+        }
+      },
+      "atSec": 5.375,
+      "respond": {
+        "error": "AUTHORIZATION_PENDING"
+      }
+    },
+    {
+      "advanceSec": 5.749
+    },
+    {
+      "advanceSec": 0.001,
+      "note": "r=0.9999 → 5 × 1.149985 = 5.749925초 → 반올림 5.750초"
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+          "device_code": "dc_Q8ZD5R2KT7VCPW01J9M0Y6X4N3"
+        }
+      },
+      "atSec": 11.125,
+      "respond": {
+        "error": "AUTHORIZATION_PENDING"
+      }
+    }
+  ]
+}

@@ -1,0 +1,202 @@
+{
+  "name": "lenient-reading",
+  "title": "모르는 필드는 버리고 모르는 열거 값은 문자열 그대로 — 깨지지 않는다",
+  "specSections": ["0", "3.2"],
+  "storage": {
+    "version": 1,
+    "refreshToken": "rt_conf_stored_000000001",
+    "scope": "entitlement.read session.write device.manage version.read profile.read",
+    "savedAt": "2026-10-06T13:00:00Z"
+  },
+  "steps": [
+    {
+      "call": "entitlement",
+      "id": "ent"
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "refresh_token",
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "refresh_token": "rt_conf_stored_000000001"
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "$tokenResponse": {
+            "access": {
+              "name": "at1"
+            },
+            "refreshToken": "rt_conf_rotated_00000001"
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "kind": "storage",
+        "op": "save",
+        "record": {
+          "version": 1,
+          "refreshToken": "rt_conf_rotated_00000001",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      }
+    },
+    {
+      "request": {
+        "operation": "getMyEntitlement"
+      },
+      "respond": {
+        "status": 200,
+        "skipContract": "API가 추가만 하는 미래의 응답 — 모르는 상태 · 기간 유형 · 필드",
+        "body": {
+          "entitlement": {
+            "id": "ent_01J9M7Q2R4S6T8V0W2X4Y6Z8A0",
+            "productId": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD",
+            "status": "PAUSED",
+            "pausedUntil": "2026-11-01T00:00:00Z",
+            "term": {
+              "type": "METERED",
+              "expiresAt": null,
+              "remainingDays": null,
+              "remainingSeconds": null,
+              "units": 40
+            },
+            "updateCoverage": {
+              "type": "BY_RELEASE_LINE",
+              "line": "2.x"
+            },
+            "subscription": null,
+            "policy": {
+              "maxDevices": 3,
+              "maxConcurrent": 1,
+              "heartbeatSec": 150,
+              "offlineGraceHours": 0,
+              "newKnob": true
+            },
+            "evaluatedAt": "2026-10-06T14:00:00Z"
+          },
+          "meta": {
+            "v": 2
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "ent",
+        "ok": true,
+        "value": {
+          "$exact": {
+            "id": "ent_01J9M7Q2R4S6T8V0W2X4Y6Z8A0",
+            "productId": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD",
+            "status": "PAUSED",
+            "term": {
+              "$exact": {
+                "type": "METERED",
+                "expiresAt": null,
+                "remainingDays": null,
+                "remainingSeconds": null
+              }
+            },
+            "updateCoverage": {
+              "type": "BY_RELEASE_LINE"
+            },
+            "subscription": null,
+            "policy": {
+              "$exact": {
+                "maxDevices": 3,
+                "maxConcurrent": 1,
+                "heartbeatSec": 150,
+                "offlineGraceHours": 0
+              }
+            },
+            "evaluatedAt": "2026-10-06T14:00:00Z"
+          }
+        }
+      }
+    },
+    {
+      "call": "checkForUpdate",
+      "id": "check",
+      "args": {
+        "target": "WINDOWS_X64",
+        "currentVersion": "2.0.0"
+      }
+    },
+    {
+      "request": {
+        "operation": "getProductUpdates"
+      },
+      "respond": {
+        "status": 200,
+        "skipContract": "미래의 설치 방식",
+        "body": {
+          "product": {
+            "id": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD"
+          },
+          "target": "WINDOWS_X64",
+          "latest": {
+            "version": "2.1.0",
+            "releasedAt": "2026-10-02T06:00:00Z",
+            "notes": null
+          },
+          "update": {
+            "status": "RECOMMENDED"
+          },
+          "install": {
+            "mode": "STREAMED",
+            "streamUrl": "https://x.example.test"
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "check",
+        "ok": true,
+        "value": {
+          "update": {
+            "status": "RECOMMENDED"
+          },
+          "install": {
+            "$exact": {
+              "mode": "STREAMED"
+            }
+          }
+        }
+      }
+    },
+    {
+      "call": "profile",
+      "id": "bad",
+      "note": "필요한 필드가 없으면 PROTOCOL_ERROR"
+    },
+    {
+      "request": {
+        "operation": "getProfile"
+      },
+      "respond": {
+        "status": 200,
+        "skipContract": "깨진 응답",
+        "body": {
+          "profile": {
+            "nickname": "코드장인"
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "bad",
+        "ok": false,
+        "error": {
+          "code": "PROTOCOL_ERROR"
+        }
+      }
+    }
+  ]
+}

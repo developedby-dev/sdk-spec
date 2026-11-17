@@ -1,0 +1,136 @@
+{
+  "name": "update-required",
+  "title": "업데이트 확인 — 대상 · 현재 버전을 보내고, 받은 파일은 sha256으로 검증",
+  "specSections": ["7"],
+  "storage": {
+    "version": 1,
+    "refreshToken": "rt_conf_stored_000000001",
+    "scope": "entitlement.read session.write device.manage version.read profile.read",
+    "savedAt": "2026-10-06T13:00:00Z"
+  },
+  "steps": [
+    {
+      "call": "checkForUpdate",
+      "id": "check",
+      "args": {
+        "target": "MACOS_UNIVERSAL",
+        "currentVersion": "1.4.0"
+      }
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "refresh_token",
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "refresh_token": "rt_conf_stored_000000001"
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "$tokenResponse": {
+            "access": {
+              "name": "at1"
+            },
+            "refreshToken": "rt_conf_rotated_00000001"
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "kind": "storage",
+        "op": "save",
+        "record": {
+          "version": 1,
+          "refreshToken": "rt_conf_rotated_00000001",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      }
+    },
+    {
+      "request": {
+        "operation": "getProductUpdates",
+        "params": {
+          "id": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD"
+        },
+        "query": {
+          "target": "MACOS_UNIVERSAL",
+          "currentVersion": "1.4.0"
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "product": {
+            "id": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD"
+          },
+          "target": "MACOS_UNIVERSAL",
+          "latest": {
+            "version": "1.4.2",
+            "releasedAt": "2026-10-02T06:00:00Z",
+            "notes": "보안 수정 포함"
+          },
+          "update": {
+            "status": "REQUIRED"
+          },
+          "install": {
+            "mode": "HOSTED",
+            "buildId": "build_01J9M4D6F8H0J2K4M6N8P0R2S4",
+            "downloadUrl": "https://dl.example.test/builds/build_01J9M4D6F8H0J2K4M6N8P0R2S4/PhotoResizer-1.4.2.dmg?sig=3f9a1c",
+            "downloadUrlExpiresAt": "2026-10-06T15:00:00Z",
+            "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+            "sizeBytes": 5
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "check",
+        "ok": true,
+        "value": {
+          "update": {
+            "status": "REQUIRED"
+          },
+          "install": {
+            "mode": "HOSTED",
+            "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+          }
+        }
+      }
+    },
+    {
+      "call": "verifyDownload",
+      "id": "good",
+      "args": {
+        "dataBase64": "aGVsbG8=",
+        "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+      }
+    },
+    {
+      "result": {
+        "id": "good",
+        "ok": true
+      }
+    },
+    {
+      "call": "verifyDownload",
+      "id": "bad",
+      "args": {
+        "dataBase64": "aGVsbG8h",
+        "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+      }
+    },
+    {
+      "result": {
+        "id": "bad",
+        "ok": false,
+        "error": {
+          "code": "DOWNLOAD_INTEGRITY"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,218 @@
+{
+  "name": "start-transient-retry",
+  "title": "획득이 일시적 실패면 Starting(attempt + 1)로 같은 키를 다시 — 2초 · 5초 …",
+  "specSections": ["8.2"],
+  "random": [0.5, 0.5, 0.5],
+  "storage": {
+    "version": 1,
+    "refreshToken": "rt_conf_stored_000000001",
+    "scope": "entitlement.read session.write device.manage version.read profile.read",
+    "savedAt": "2026-10-06T13:00:00Z"
+  },
+  "steps": [
+    {
+      "call": "session.start",
+      "id": "start"
+    },
+    {
+      "event": {
+        "kind": "session.state",
+        "state": {
+          "type": "Starting",
+          "attempt": 0,
+          "lastError": null
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "start",
+        "ok": true
+      }
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "refresh_token",
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "refresh_token": "rt_conf_stored_000000001"
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "$tokenResponse": {
+            "access": {
+              "name": "at1"
+            },
+            "refreshToken": "rt_conf_rotated_00000001"
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "kind": "storage",
+        "op": "save",
+        "record": {
+          "version": 1,
+          "refreshToken": "rt_conf_rotated_00000001",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      }
+    },
+    {
+      "request": {
+        "operation": "acquireSession",
+        "headers": {
+          "authorization": {
+            "$bearer": "at1"
+          },
+          "idempotency-key": "00000000-0000-4000-8000-000000000002"
+        },
+        "body": {
+          "device": {
+            "fingerprintHash": {
+              "$fingerprint": true
+            },
+            "name": "DESKTOP-7XK2P",
+            "platform": "WINDOWS"
+          },
+          "instanceId": "00000000-0000-4000-8000-000000000001",
+          "force": false
+        }
+      },
+      "respond": {
+        "status": 503,
+        "rawBody": "maintenance"
+      },
+      "atSec": 0
+    },
+    {
+      "event": {
+        "kind": "session.state",
+        "state": {
+          "type": "Starting",
+          "attempt": 1,
+          "lastError": {
+            "code": "INTERNAL_ERROR",
+            "httpStatus": 503
+          }
+        }
+      }
+    },
+    {
+      "advanceSec": 2
+    },
+    {
+      "request": {
+        "operation": "acquireSession",
+        "headers": {
+          "authorization": {
+            "$bearer": "at1"
+          },
+          "idempotency-key": "00000000-0000-4000-8000-000000000002"
+        },
+        "body": {
+          "device": {
+            "fingerprintHash": {
+              "$fingerprint": true
+            },
+            "name": "DESKTOP-7XK2P",
+            "platform": "WINDOWS"
+          },
+          "instanceId": "00000000-0000-4000-8000-000000000001",
+          "force": false
+        }
+      },
+      "respond": {
+        "network": true
+      },
+      "atSec": 2
+    },
+    {
+      "event": {
+        "kind": "session.state",
+        "state": {
+          "type": "Starting",
+          "attempt": 2,
+          "lastError": {
+            "code": "NETWORK_ERROR"
+          }
+        }
+      }
+    },
+    {
+      "advanceSec": 5
+    },
+    {
+      "request": {
+        "operation": "acquireSession",
+        "headers": {
+          "authorization": {
+            "$bearer": "at1"
+          },
+          "idempotency-key": "00000000-0000-4000-8000-000000000002"
+        },
+        "body": {
+          "device": {
+            "fingerprintHash": {
+              "$fingerprint": true
+            },
+            "name": "DESKTOP-7XK2P",
+            "platform": "WINDOWS"
+          },
+          "instanceId": "00000000-0000-4000-8000-000000000001",
+          "force": false
+        }
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "$sessionResponse": {
+            "id": "sess_01J9M2P8Q7R6S5T4V3W2X1Y0Z9",
+            "generation": 1,
+            "token": {
+              "name": "lt1"
+            }
+          }
+        }
+      },
+      "atSec": 7
+    },
+    {
+      "event": {
+        "kind": "session.state",
+        "state": {
+          "type": "Active",
+          "session": {
+            "id": "sess_01J9M2P8Q7R6S5T4V3W2X1Y0Z9",
+            "productId": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD",
+            "deviceId": "dev_01J9M0Z8Y7X6W5V4T3S2R1Q0P9",
+            "generation": 1,
+            "heartbeatSec": 150,
+            "leaseExpiresAt": {
+              "$at": "+600s"
+            }
+          },
+          "licenseToken": {
+            "token": {
+              "$token": "lt1"
+            },
+            "expiresAt": {
+              "$at": "+600s"
+            }
+          },
+          "claims": {
+            "sid": "sess_01J9M2P8Q7R6S5T4V3W2X1Y0Z9",
+            "device_id": "dev_01J9M0Z8Y7X6W5V4T3S2R1Q0P9",
+            "generation": 1,
+            "aud": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+            "product_id": "prod_01J9KZ3F7W2X8YQ4N6M5R1TBCD"
+          }
+        }
+      }
+    }
+  ]
+}

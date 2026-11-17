@@ -1,0 +1,53 @@
+{
+  "name": "issuer-mismatch",
+  "title": "발견 문서의 issuer가 baseUrl과 다르면 CONFIGURATION",
+  "specSections": ["4"],
+  "auto": {
+    "discovery": false
+  },
+  "storage": {
+    "version": 1,
+    "refreshToken": "rt_conf_stored_000000001",
+    "scope": "entitlement.read session.write device.manage version.read profile.read",
+    "savedAt": "2026-10-06T13:00:00Z"
+  },
+  "steps": [
+    {
+      "call": "entitlement",
+      "id": "ent"
+    },
+    {
+      "request": {
+        "operation": "getOpenIdConfiguration"
+      },
+      "respond": {
+        "status": 200,
+        "body": {
+          "issuer": "https://evil.example.test",
+          "jwks_uri": "https://evil.example.test/.well-known/jwks.json",
+          "device_authorization_endpoint": "https://evil.example.test/v1/oauth/device_code",
+          "token_endpoint": "https://evil.example.test/v1/oauth/token",
+          "revocation_endpoint": "https://evil.example.test/v1/oauth/revoke",
+          "grant_types_supported": [
+            "urn:ietf:params:oauth:grant-type:device_code",
+            "refresh_token"
+          ],
+          "response_types_supported": [],
+          "scopes_supported": ["entitlement.read"],
+          "subject_types_supported": ["pairwise"],
+          "token_endpoint_auth_methods_supported": ["none"],
+          "revocation_endpoint_auth_methods_supported": ["none"]
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "ent",
+        "ok": false,
+        "error": {
+          "code": "CONFIGURATION"
+        }
+      }
+    }
+  ]
+}
