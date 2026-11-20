@@ -75,6 +75,8 @@ TypeScript, Go, Python, Kotlin, .NET SDK는 `secret-tool` 명령으로 Linux Sec
 
 Rust와 C SDK는 D-Bus로 직접 접근합니다. 근거: ADR-0040 ⚠ 54, 2026-10-19 결정.
 
+Windows에서 운영체제 명령(DPAPI의 `powershell`, 레지스트리 API가 없을 때의 `reg` 등)을 띄울 때는 콘솔 창을 만들지 않습니다(`CREATE_NO_WINDOW`). GUI 앱이 띄운 콘솔 명령은 창이 잠깐 보이고, 콘솔을 만들지 못하면 `0xC0000142`로 끝나 저장 · 지문 읽기가 실패합니다. 근거: ADR-0040 ⚠ 70.
+
 모바일의 지문 출처는 Android의 `ANDROID_ID`, iOS의 `identifierForVendor`입니다(안내서 03).
 
 저장소 항목의 서비스 이름은 `rules.storage.service`, 계정 이름은 `clientId`이며 값은 3.6절의 기록입니다. 같은 앱이 SDK 버전을 변경해도 같은 항목을 읽습니다.
