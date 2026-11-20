@@ -1,5 +1,5 @@
 {
-  "specVersion": "1.1.1",
+  "specVersion": "1.2.0",
   "api": "v1",
   "userAgent": {
     "languages": ["typescript", "dotnet", "swift", "kotlin", "python", "go", "rust", "c"],
@@ -28,7 +28,9 @@
   "fingerprint": {
     "algorithm": "SHA-256",
     "salt": "bydev-device-v1",
-    "encoding": "hex-lower"
+    "encoding": "hex-lower",
+    "sourceReadAttempts": 3,
+    "sourceReadRetryDelayMs": 300
   },
   "storage": {
     "service": "dev.developedby.sdk",

@@ -26,7 +26,7 @@ pnpm --filter @bydev/sdk-conformance run conformance -- --harness "<하네스 �
 | `Random.float` | `init.random`의 값을 앞에서부터 하나씩 꺼낸다. 다 쓰면 `fatal` |
 | `Random.uuid` | `00000000-0000-4000-8000-000000000001`부터 마지막 자리를 하나씩 올린 값(16진 12자리) |
 | `CredentialStore` | 메모리. 시작값은 `init.storage`. `save` · `clear`마다 `storage` 사건을 쓴다. `set storage.fail*`로 실패를 낸다 |
-| `FingerprintSource` | `init.config.device.fingerprintSource`(null이면 읽지 못함) |
+| `FingerprintSource` | `init.config.device.fingerprintSource`(null이면 읽지 못함). `set fingerprint.fail`이 참인 동안은 읽지 못한다(1.2.0) |
 
 시간은 정수 밀리초다. 지연을 만드는 곱셈(지터)은 명세대로 `round`한다.
 
@@ -39,7 +39,7 @@ pnpm --filter @bydev/sdk-conformance run conformance -- --harness "<하네스 �
 | `init` | `config`(`baseUrl` · `clientId` · `productId` · `scopes` · `device` { `name` · `platform` · `fingerprintSource` } · `app` { `target` · `version` }(없을 수 있다)), `now`(ISO), `random`(수 배열), `storage`(기록 또는 null) | 포트와 SDK 클라이언트를 만든다. 아직 요청을 보내지 않는다 |
 | `call` | `calls`: [{ `id`, `method`, `args` }] | 나열한 호출을 **같은 순간에** 시작한다(앞 호출을 기다리지 않는다). 결과는 끝나는 대로 `result` |
 | `advance` | `ms` | 가상 시각을 `ms`만큼 옮기며 그 사이에 온 예약 작업을 돌린다 |
-| `set` | `key`, `value` | `storage.failLoad` · `storage.failSave` · `storage.failClear`(참/거짓) |
+| `set` | `key`, `value` | `storage.failLoad` · `storage.failSave` · `storage.failClear` · `fingerprint.fail`(참/거짓) |
 | `http.response` | `id`, `response`({ `status`, `headers`, `body`(문자열) }) 또는 `error`(`"NETWORK"`) | 그 요청을 기다리던 전송에 돌려준다 |
 | `end` | — | 열린 작업을 버리고 끝난다(종료 코드 0) |
 
