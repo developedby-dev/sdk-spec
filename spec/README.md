@@ -162,7 +162,7 @@ startLogin() ──POST device_code──▶ 코드 받음 { userCode, verificat
      ▼                                   ▼
 wait() ── interval × U(1.00, 1.15) 뒤 POST token ──┬─ AUTHORIZATION_PENDING → 같은 간격으로 다시
                                                    ├─ SLOW_DOWN → 간격 = retryAfterSec (없으면 + rules.login.slowDownIncrementSec), 다시
-                                                   ├─ 일시적 실패 → 같은 간격으로 다시 (만료 전까지)
+                                                   ├─ 일시적 실패 → 같은 간격으로 다시 (만료 전까지 — 429면 그 값과 retryAfterSec 중 큰 쪽)
                                                    ├─ 토큰 → 저장(6.3) 뒤 성공
                                                    ├─ EXPIRED_TOKEN · INVALID_GRANT · 그 밖 끝난 실패 → 그 에러로 끝
                                                    └─ cancel() → LOGIN_CANCELLED로 끝 (보내던 요청은 결과를 버린다)
@@ -171,6 +171,10 @@ wait() ── interval × U(1.00, 1.15) 뒤 POST token ──┬─ AUTHORIZATIO
 - `expiresAt = device_code 받은 시각 + expires_in`. 다음 폴링 시각이 `expiresAt`을 넘으면 보내지 않고 `EXPIRED_TOKEN`으로 완료합니다.
 - **폴링 지터는 간격을 늘리는 방향으로만 적용합니다**(`rules.login.pollJitter`: 1.00 ~ 1.15). 서버는 `interval`보다 이른 폴링을 `SLOW_DOWN`으로 봅니다(RFC 8628 §3.5 :
   "적어도 interval만큼 기다린다"). 하트비트의 ±15%와 다릅니다.
+- **429(`RATE_LIMITED` 또는 HTTP 429인 일시적 실패)면 다음 폴링은 `max(지터 적용 간격, retryAfterSec)` 뒤입니다**(8.3 하트비트와 같은 규칙). 간격 자체는
+  바꾸지 않습니다(그 다음 폴링은 다시 `interval`): `SLOW_DOWN`은 이 앱이 빨리 물은 것이고, 429는 같은 IP 뒤의 여러 앱이나 앞단 차단이 원인이라
+  한 번만 물러납니다. 한 IP(회사 · 학교 NAT) 뒤에서 여러 앱이 동시에 로그인을 기다릴 때 같은 간격으로 계속 물어 차단을 늘리지 않기 위해서입니다(ADR-0010
+  덧붙임 「요청 한도 수치 확정」 ⚠). 그 시각이 `expiresAt`을 넘으면 보내지 않고 `EXPIRED_TOKEN`으로 완료합니다.
 - 같은 클라이언트에서 로그인은 한 번에 하나입니다. 진행 중에 `startLogin()`을 다시 부르면 앞의 것을 취소합니다.
 - 성공하면 메모리에 access_token · `expires_in` · 받은 시각을 두고, 기록(3.6)을 저장합니다. 저장에 실패하면 새 토큰을 쓰지 않고 `STORAGE_FAILED`로
   완료합니다.

@@ -1,5 +1,5 @@
 {
-  "specVersion": "1.1.0",
+  "specVersion": "1.1.1",
   "api": "v1",
   "userAgent": {
     "languages": ["typescript", "dotnet", "swift", "kotlin", "python", "go", "rust", "c"],

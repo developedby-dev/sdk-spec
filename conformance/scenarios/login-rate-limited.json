@@ -1,0 +1,125 @@
+{
+  "name": "login-rate-limited",
+  "title": "폴링 중 429면 다음 폴링은 간격과 retryAfterSec 중 큰 쪽 — 간격 자체는 그대로",
+  "specSections": ["5"],
+  "random": [0, 0, 0],
+  "steps": [
+    {
+      "call": "login.start",
+      "id": "start"
+    },
+    {
+      "request": {
+        "operation": "issueDeviceCode",
+        "body": {
+          "client_id": "cli_01J9M0Y6X4N3Q8ZD5R2KT7VCPW",
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      },
+      "atSec": 0,
+      "respond": {
+        "status": 200,
+        "body": {
+          "$deviceCodeResponse": {
+            "interval": 5
+          }
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "start",
+        "ok": true,
+        "value": {
+          "userCode": "BCDF-GHJK",
+          "expiresAt": {
+            "$at": "+900s"
+          }
+        }
+      }
+    },
+    {
+      "call": "login.wait",
+      "id": "wait"
+    },
+    {
+      "advanceSec": 5
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+          "device_code": "dc_Q8ZD5R2KT7VCPW01J9M0Y6X4N3"
+        }
+      },
+      "atSec": 5,
+      "respond": {
+        "error": "RATE_LIMITED",
+        "retryAfterSec": 27
+      }
+    },
+    {
+      "advanceSec": 26
+    },
+    {
+      "advanceSec": 1
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+          "device_code": "dc_Q8ZD5R2KT7VCPW01J9M0Y6X4N3"
+        }
+      },
+      "atSec": 32,
+      "respond": {
+        "error": "RATE_LIMITED",
+        "retryAfterSec": 2
+      }
+    },
+    {
+      "advanceSec": 4
+    },
+    {
+      "advanceSec": 1
+    },
+    {
+      "request": {
+        "operation": "exchangeToken",
+        "body": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+          "device_code": "dc_Q8ZD5R2KT7VCPW01J9M0Y6X4N3"
+        }
+      },
+      "atSec": 37,
+      "respond": {
+        "status": 200,
+        "body": {
+          "$tokenResponse": {
+            "refreshToken": "rt_conf_login_0000000004"
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "kind": "storage",
+        "op": "save",
+        "record": {
+          "refreshToken": "rt_conf_login_0000000004"
+        }
+      }
+    },
+    {
+      "result": {
+        "id": "wait",
+        "ok": true,
+        "value": {
+          "scope": "entitlement.read session.write device.manage version.read profile.read"
+        }
+      }
+    }
+  ]
+}
